@@ -1,0 +1,261 @@
+.vscode/settings.json
+@@ -0,0 +1,3 @@
+{
+    "java.compile.nullAnalysis.mode": "disabled"
+}
+  4 changes: 4 additions & 0 deletions4  
+app/build.gradle
+@@ -11,4 +11,8 @@ repositories {
+dependencies {
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+	implementation 'org.apache.tomcat.embed:tomcat-embed-jasper'
+	implementation 'org.springframework.boot:spring-boot-starter-data-jpa:3.0.6'
+	implementation 'mysql:mysql-connector-java:8.0.33'
+	implementation 'jakarta.servlet.jsp.jstl:jakarta.servlet.jsp.jstl-api:3.0.0'
+	implementation 'org.glassfish.web:jakarta.servlet.jsp.jstl:3.0.1'
+}
+  2 changes: 1 addition & 1 deletion2  
+app/src/main/java/application/controller/IndexController.java
+@@ -7,7 +7,7 @@
+public class IndexController {
+    @RequestMapping("/")
+    public String home() {
+        return "WEB-INF/home.jsp";
+        return "home";
+    }
+}
+
+ 62 changes: 62 additions & 0 deletions62  
+app/src/main/java/application/model/Alternativa.java
+@@ -0,0 +1,62 @@
+package application.model;
+
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
+
+@Entity
+@Table(name = "alternativa")
+public class Alternativa {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private long id;
+
+    @Column(unique = true, nullable = false)
+    private String Texto;
+
+    @Column(nullable = false)
+    private boolean isCorreta;
+
+    @ManyToOne
+    @JoinColumn(name = "id_questao")
+    private Questao questao;
+
+    public long getId() {
+        return id;
+    }
+
+    public void setId(long id) {
+        this.id = id;
+    }
+
+    public String getTexto() {
+        return Texto;
+    }
+
+    public void setTexto(String texto) {
+        Texto = texto;
+    }
+
+    public boolean isCorreta() {
+        return isCorreta;
+    }
+
+    public void setCorreta(boolean isCorreta) {
+        this.isCorreta = isCorreta;
+    }
+
+    public Questao getQuestao() {
+        return questao;
+    }
+
+    public void setQuestao(Questao questao) {
+        this.questao = questao;
+    }
+
+
+}
+ 65 changes: 65 additions & 0 deletions65  
+app/src/main/java/application/model/Questao.java
+@@ -0,0 +1,65 @@
+package application.model;
+
+import java.util.HashSet;
+import java.util.Set;
+
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.Table;
+
+@Entity
+@Table(name = "questao")
+public class Questao {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private long id;
+
+    @Column(nullable = true)
+    private String enunciado;
+
+    @OneToMany
+    @JoinColumn(name = "id_quiz")
+    private Quiz quiz;
+
+    @OneToMany(mappedBy = "alternativa")
+    private Set<Alternativa> alternativas = new HashSet<>();
+
+    public long getId() {
+        return id;
+    }
+
+    public void setId(long id) {
+        this.id = id;
+    }
+
+    public String getEnunciado() {
+        return enunciado;
+    }
+
+    public void setEnunciado(String enunciado) {
+        this.enunciado = enunciado;
+    }
+
+    public Quiz getQuiz() {
+        return quiz;
+    }
+
+    public void setQuiz(Quiz quiz) {
+        this.quiz = quiz;
+    }
+
+    public Set<Alternativa> getAlternativas() {
+        return alternativas;
+    }
+
+    public void setAlternativas(Set<Alternativa> alternativas) {
+        this.alternativas = alternativas;
+    }
+
+
+}
+ 52 changes: 52 additions & 0 deletions52  
+app/src/main/java/application/model/Quiz.java
+@@ -0,0 +1,52 @@
+package application.model;
+
+import java.util.HashSet;
+import java.util.Set;
+
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.Table;
+
+@Entity
+@Table(name="quiz")
+public class Quiz {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private long id;
+    @Column(unique = true, nullable = false)
+    private String nome;
+
+    @OneToMany(mappedBy = "quiz")
+    private Set<Questao> questoes = new HashSet<>();
+
+    public long getId() {
+        return id;
+    }
+
+
+    public void setId(long id) {
+        this.id = id;
+    }
+
+    public String getNome() {
+        return nome;
+    }
+
+    public void setNome(String nome) {
+        this.nome = nome;
+    }
+
+    public Set<Questao> getQuestoes() {
+        return questoes;
+    }
+
+    public void setQuestoes(Set<Questao> questoes) {
+        this.questoes = questoes;
+    }
+
+
+}
+ 9 changes: 9 additions & 0 deletions9  
+app/src/main/java/application/repository/AlternativaRepository.java
+@@ -0,0 +1,9 @@
+package application.repository;
+
+import org.springframework.data.repository.CrudRepository;
+
+import application.model.Alternativa;
+
+public interface AlternativaRepository extends CrudRepository<Alternativa, Long>{
+
+}
+ 9 changes: 9 additions & 0 deletions9  
+app/src/main/java/application/repository/QuestaoRepository.java
+@@ -0,0 +1,9 @@
+package application.repository;
+
+import org.springframework.data.repository.CrudRepository;
+
+import application.model.Questao;
+
+public interface QuestaoRepository extends CrudRepository<Questao, Long>{
+
+}
+ 9 changes: 9 additions & 0 deletions9  
+app/src/main/java/application/repository/QuizRepository.java
+@@ -0,0 +1,9 @@
+package application.repository;
+
+import org.springframework.data.repository.CrudRepository;
+
+import application.model.Quiz;
+
+public interface QuizRepository extends CrudRepository<Quiz, Long>{
+
+}
+ 7 changes: 7 additions & 0 deletions7  
+app/src/resources/application.properties
+@@ -0,0 +1,7 @@
+spring.datasource.url=jdbc:mysql://localhost:3306/application
+spring.datasource.username=root
+spring.datasource.password=rootpass
+spring.jpa.hibernate.ddl-auto=update
+
+spring.mvc.view.prefix=/WEB-INF/
+spring.mvc.view.suffix=.jsp
